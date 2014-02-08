@@ -5,6 +5,8 @@ Six Axis or 6 DOF Complementary Filter
 
 This filter was created primarily for the MPU-6050 Gyroscope and Accelerometer module for the
 Tiva C Launchpad by Texas Instruments written in TI's style (C written as object-oriented).
+Because this is a generic complementary filter, it should be able to work with any 6 DOF
+gyroscope and accelerometer module. I make no guarantees, but it should.
 Since this library does not rely on any of TI's libraries, I have given it the MIT license.
 
 Structures

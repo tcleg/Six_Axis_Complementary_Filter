@@ -25,6 +25,8 @@ fDeltaT:  The time delta between updates in seconds. fDeltaT = 1/(sampling frequ
 
 fTau:     Max allowable time in seconds until gyro drifts too far and comp. filter
           shifts its weight to the accelerometer.
+          
+Description - Initializes the complementary filter.
 
 
 void SixCompStart(tSixAxis *psFilter)

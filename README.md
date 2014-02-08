@@ -8,6 +8,9 @@ Tiva C Launchpad by Texas Instruments written in TI's style (C written as object
 Because this is a generic complementary filter, it should be able to work with any 6 DOF
 gyroscope and accelerometer module. I make no guarantees, but it should.
 Since this library does not rely on any of TI's libraries, I have given it the MIT license.
+Also, this library relies fairly heavily on floating point arithmetic and trigonometric
+functions, so if used on a microcontroller without an FPU (floating point unit), this
+library may be quite slow.
 
 Structures
 ==========================

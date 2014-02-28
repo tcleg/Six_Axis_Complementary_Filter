@@ -27,7 +27,8 @@ psFilter: Address of a tSixAxis instantiation
 fDeltaT:  The time delta between updates in seconds. fDeltaT = 1/(sampling frequency)
 
 fTau:     Max allowable time in seconds until gyro drifts too far and comp. filter
-          shifts its weight to the accelerometer.
+          shifts its weight to the accelerometer. If the filter is not responding as fast
+          as it should, tweak this value.
           
 Description - Initializes the complementary filter.
 
@@ -38,7 +39,7 @@ psFilter: Address of a tSixAxis instantiation
 
 Description - Should be called at least once before SixCompUpdate. This allows the comp.
 filter to converge faster. If it is not called, the filter will still converge but it'll
-take longer.
+take longer. Call SixCompAccelUpdate beforehand.
 
 
 void SixCompUpdate(tSixAxis *psFilter)

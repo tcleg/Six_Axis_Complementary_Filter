@@ -118,7 +118,7 @@ SixCompUpdate(tSixAxis *psFilter)
     // Make the data easier to work with and visualize.
     float alpha = psFilter->fAlpha;
     float deltaT = psFilter->fDeltaT;
-    float omega[2];
+    float omega;
     float accAng[2];
     float comp[2];
     uint8_t idx;
@@ -130,16 +130,13 @@ SixCompUpdate(tSixAxis *psFilter)
     
     for(idx = 0; idx < 2; idx++)
     {
-        
-        // Invert direction of gyro to coincide with accelerometer
         comp[idx] = psFilter->pfCompAngle[idx];
-        omega[idx] = -(psFilter->pfGyro[idx]);
         
         // Work with angles that are closest in distance to the accelerometer angle
         // Angle > Accelerometer Angle
         if(comp[idx] > accAng[idx])
         {
-            // accelAngle + (2*pi - Angle) < abs(Angle - accelAngle)
+            // accelAngle + (2*pi - Angle) < Angle - accelAngle
             if( accAng[idx] + (TWO_PI - comp[idx]) < comp[idx] - accAng[idx] )
             {
                 // Angle = Angle - 2*pi
@@ -148,7 +145,7 @@ SixCompUpdate(tSixAxis *psFilter)
         } 
         else
         {
-            // Angle + (2*pi - accelAngle) < abs(accelAngle - Angle)
+            // Angle + (2*pi - accelAngle) < accelAngle - Angle
             if( comp[idx] + (TWO_PI - accAng[idx]) < accAng[idx] - comp[idx] )
             {
                 // Angle = Angle + 2*pi
@@ -159,14 +156,21 @@ SixCompUpdate(tSixAxis *psFilter)
         // Complementary Filter for angle X
         if( idx == 0)
         {
+            // Take rotational velocity about the Y axis and invert the sense of
+            // direction
+            omega = -(psFilter->pfGyro[1]);
+        
             // AngleX = alpha*(AngleX + omegaY*deltaT) + (1 - alpha)*accelAngleX
-            comp[idx] = alpha*(comp[idx] + omega[1]*deltaT) + (1.0f - alpha)*accAng[idx];
+            comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
         }
         // Complementary Filter for angle Y
         else
         {
+            // Take rotational velocity about the X axis
+            omega = psFilter->pfGyro[0];
+        
             // AngleY = alpha*(AngleY + omegaX*deltaT) + (1 - alpha)*accelAngleY
-            comp[idx] = alpha*(comp[idx] + omega[0]*deltaT) + (1.0f - alpha)*accAng[idx];
+            comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
         }
         
         // Format comp. outputs to always be within the range of 0 to 2*PI

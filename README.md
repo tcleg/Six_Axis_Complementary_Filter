@@ -1,5 +1,7 @@
-Platform Independent 6 DOF Complementary Filter
+6 DOF Complementary Filter
 ===============================================
+
+Platform Independent
 
 This filter was created primarily for the MPU-6050 Gyroscope and Accelerometer module for the
 Tiva C Launchpad by Texas Instruments written in TI's style (C written as object-oriented).

@@ -1,18 +1,29 @@
 //*********************************************************************************
-// Six Axis Complementary Filter
+// Six Axis Complementary Filter - Platform Independent
 // 
-// Revision: 1
+// Revision: 1.0
 // 
 // Description: Takes gyroscope and accelerometer readings and produces a "fused"
 // reading that is more accurate. Relies heavily on floating point arithmetic
 // and trigonometry.
 // 
-// Copyright (C) 2014 Trent Cleghorn
+// This library has been tested to work with the MPU-6050 6 DOF IMU Sensor
+// comprising a gyroscope and accelerometer. It should also work with other 6 
+// DOF IMUs but there are no guarantees. Also, this library should work 
+// with even 5 DOF IMUs since the gyroscope reading about the Z axis technically
+// goes unused with this library at its current Revision 1.0.
+// 
+// Revisions can be found here:
+// https://github.com/tcleg
+// 
+// Copyright (C) 2014 Trent Cleghorn , <trentoncleghorn@gmail.com>
+// 
+//                                  MIT License
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, andór sell
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 // 
@@ -33,6 +44,14 @@
 //*********************************************************************************
 #include <math.h>
 #include "six_axis_comp_filter.h"
+
+//*********************************************************************************
+// Macros and Globals
+//*********************************************************************************
+#define PI                              3.1415926f
+#define HALF_PI                         1.5707963f
+#define TWO_PI                          6.2831853f
+#define SQ(x) 		                    ((x)*(x))
 
 //*********************************************************************************
 // Functions
@@ -125,6 +144,7 @@ SixCompUpdate(tSixAxis *psFilter)
     
     // Calculate accelerometer angles
     SixCompAccelCalculate(psFilter);
+    
     accAng[0] = psFilter->pfAccelAngle[0];
     accAng[1] = psFilter->pfAccelAngle[1];
     
@@ -133,22 +153,23 @@ SixCompUpdate(tSixAxis *psFilter)
         comp[idx] = psFilter->pfCompAngle[idx];
         
         // Work with angles that are closest in distance to the accelerometer angle
-        // Angle > Accelerometer Angle
+        // on the unit circle. This allows for significantly faster filter convergence.
+        // CompFilterAngle > AccelAngle
         if(comp[idx] > accAng[idx])
         {
-            // accelAngle + (2*pi - Angle) < Angle - accelAngle
+            // AccelAngle + (2*pi - CompFilterAngle) < CompFilterAngle - AccelAngle
             if( accAng[idx] + (TWO_PI - comp[idx]) < comp[idx] - accAng[idx] )
             {
-                // Angle = Angle - 2*pi
+                // CompFilterAngle = CompFilterAngle - 2*pi
                 comp[idx] = comp[idx] - TWO_PI;
             }
         } 
         else
         {
-            // Angle + (2*pi - accelAngle) < accelAngle - Angle
+            // AccelAngle + (2*pi - AccelAngle) < AccelAngle - CompFilterAngle
             if( comp[idx] + (TWO_PI - accAng[idx]) < accAng[idx] - comp[idx] )
             {
-                // Angle = Angle + 2*pi
+                // CompFilterAngle = CompFilterAngle + 2*pi
                 comp[idx] = comp[idx] + TWO_PI;
             }
         }
@@ -173,7 +194,7 @@ SixCompUpdate(tSixAxis *psFilter)
             comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
         }
         
-        // Format comp. outputs to always be within the range of 0 to 2*PI
+        // Format comp. outputs to always be within the range of 0 to 2*pi
         while(comp[idx] >= TWO_PI)
         {
             comp[idx] = comp[idx] - TWO_PI;
@@ -194,8 +215,14 @@ void
 SixCompAnglesGet(tSixAxis *psFilter, float *pfCompAngleX, float *pfCompAngleY)
 {
     // Transfer structure's updated comp. filter's angles
-    *pfCompAngleX = psFilter->pfCompAngle[0];
-    *pfCompAngleY = psFilter->pfCompAngle[1];
+    if(pfCompAngleX)
+    {
+        *pfCompAngleX = psFilter->pfCompAngle[0];
+    }
+    if(pfCompAngleY)
+    {
+        *pfCompAngleY = psFilter->pfCompAngle[1];
+    }
 }
 
 

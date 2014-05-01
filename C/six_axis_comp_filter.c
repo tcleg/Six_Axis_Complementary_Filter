@@ -1,7 +1,7 @@
 //*********************************************************************************
 // Six Axis Complementary Filter - Platform Independent
 // 
-// Revision: 1.0
+// Revision: 1.2
 // 
 // Description: Takes gyroscope and accelerometer readings and produces a "fused"
 // reading that is more accurate. Relies heavily on floating point arithmetic
@@ -11,7 +11,7 @@
 // comprising a gyroscope and accelerometer. It should also work with other 6 
 // DOF IMUs but there are no guarantees. Also, this library should work 
 // with even 5 DOF IMUs since the gyroscope reading about the Z axis technically
-// goes unused with this library at its current Revision 1.0.
+// goes unused with this library at its current revision.
 // 
 // Revisions can be found here:
 // https://github.com/tcleg
@@ -57,104 +57,98 @@
 // Functions
 //*********************************************************************************
 void
-SixCompAccelCalculate(tSixAxis *psFilter)
+SixCompAccelCalculate(tSixAxis *filter)
 {
-    // Make data easier to visualize
-    float Ax = psFilter->pfAccel[0];
-    float Ay = psFilter->pfAccel[1];
-    float Az = psFilter->pfAccel[2];
-    float ang[2];
     uint8_t idx;
+    float angle[2];
     
     // Angle made by X axis acceleration vector relative to ground
-    ang[0] = atan2f(Ax, sqrtf( SQ(Ay) + SQ(Az) ) );
+    // accelAngleX = atan(Ax, sqrt( SQ(Ay) + SQ(Az) )
+    angle[0] = atan2f(filter->Ax, sqrtf( SQ(filter->Ay) + SQ(filter->Az) ) );
     
     // Angle made by Y axis acceleration vector relative to ground
-    ang[1] = atan2f(Ay, sqrtf( SQ(Ax) + SQ(Az) ) );
+    // accelAngleY = atan(Ay, sqrt( SQ(Ax) + SQ(Az) )
+    angle[1] = atan2f(filter->Ay, sqrtf( SQ(filter->Ax) + SQ(filter->Az) ) );
     
     // Check to see which quadrant of the unit circle the angle lies in
     // and format the angle to lie in the range of 0 to 2*PI
     for(idx = 0; idx < 2; idx++)
     {
+        if(filter->Az < 0.0f)
+        {
+            // Angle lies in Quadrant 2 or Quadrant 3 of
+            // the unit circle
+            angle[idx] = PI - angle[idx];
+        }
+        else if(filter->Az > 0.0f && angle[idx] < 0.0f)
+        {
+            // Angle lies in Quadrant 4 of the unit circle
+            angle[idx] = TWO_PI + angle[idx];
+        }
         
-        /*
-        // Commented out because it does nothing
-        if(Az > 0.0 && ang[idx] >= 0.0)
-        {
-            // Angle lies in Quadrant 1
-            // Do nothing
-        }
-        */
-        
-        if(Az < 0.0f && ang[idx] >= 0.0f)
-        {
-            // Angle lies in Quadrant 2
-            ang[idx] = PI - ang[idx];
-        }
-        else if(Az < 0.0f && ang[idx] <= 0.0f)
-        {
-            // Angle lies in Quadrant 3
-            ang[idx] = PI - ang[idx];
-        }
-        else if(Az > 0.0f && ang[idx] < 0.0f)
-        {
-            // Angle lies in Quadrant 4
-            ang[idx] = TWO_PI + ang[idx];
-        }
+        // If both of the previous conditions were not satisfied, then
+        // the angle must lie in Quadrant 1
         
         // Save accelerometer angle to structure
-        psFilter->pfAccelAngle[idx] = ang[idx];
+        if(idx == 0)
+        {
+            filter->accelAngleX = angle[idx];
+        }
+        else
+        {
+            filter->accelAngleY = angle[idx];
+        }
     }
 }
 
 void 
-SixCompInit(tSixAxis *psFilter, float fDeltaT, float fTau)
+SixCompInit(tSixAxis *filter, float deltaT, float tau)
 {
-    // Save values to structure
-    psFilter->fDeltaT = fDeltaT;
-    psFilter->fTau = fTau;
+    // Save value to structure
+    filter->deltaT = deltaT;
     
     // Calculate weighting factor
-    psFilter->fAlpha = fTau/(fTau + fDeltaT);
+    filter->alpha = tau/(tau + deltaT);
 }
 
 
 void 
-SixCompStart(tSixAxis *psFilter)
+SixCompStart(tSixAxis *filter)
 {
     // Calculate accelerometer angles
-    SixCompAccelCalculate(psFilter);
+    SixCompAccelCalculate(filter);
     
     // Initialize filter to accel angles
-    psFilter->pfCompAngle[0] = psFilter->pfAccelAngle[0];
-    psFilter->pfCompAngle[1] = psFilter->pfAccelAngle[1];
+    filter->compAngleX = filter->accelAngleX;
+    filter->compAngleY = filter->accelAngleY;
 }
 
 
 void 
-SixCompUpdate(tSixAxis *psFilter)
+SixCompUpdate(tSixAxis *filter)
 {   
     // Make the data easier to work with and visualize.
-    float alpha = psFilter->fAlpha;
-    float deltaT = psFilter->fDeltaT;
+    uint8_t idx;
     float omega;
     float accAng[2];
     float comp[2];
-    uint8_t idx;
+    float alpha = filter->alpha;
+    float deltaT = filter->deltaT;
+    
     
     // Calculate accelerometer angles
-    SixCompAccelCalculate(psFilter);
+    SixCompAccelCalculate(filter);
     
-    accAng[0] = psFilter->pfAccelAngle[0];
-    accAng[1] = psFilter->pfAccelAngle[1];
+    // Gather the current accelerometer and complementary filter angles
+    accAng[0] = filter->accelAngleX;
+    accAng[1] = filter->accelAngleY;
+    comp[0] = filter->compAngleX;
+    comp[1] = filter->compAngleY;
     
     for(idx = 0; idx < 2; idx++)
     {
-        comp[idx] = psFilter->pfCompAngle[idx];
-        
-        // Work with angles that are closest in distance to the accelerometer angle
+        // Work with comp. angles that are closest in distance to the accelerometer angle
         // on the unit circle. This allows for significantly faster filter convergence.
-        // CompFilterAngle > AccelAngle
         if(comp[idx] > accAng[idx])
         {
             // AccelAngle + (2*pi - CompFilterAngle) < CompFilterAngle - AccelAngle
@@ -174,25 +168,23 @@ SixCompUpdate(tSixAxis *psFilter)
             }
         }
         
-        // Complementary Filter for angle X
+        // Acquire the correct gyroscopic angular velocity
         if( idx == 0)
         {
             // Take rotational velocity about the Y axis and invert the sense of
             // direction
-            omega = -(psFilter->pfGyro[1]);
-        
-            // AngleX = alpha*(AngleX + omegaY*deltaT) + (1 - alpha)*accelAngleX
-            comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
+            omega = -(filter->Gy);
         }
-        // Complementary Filter for angle Y
         else
         {
             // Take rotational velocity about the X axis
-            omega = psFilter->pfGyro[0];
-        
-            // AngleY = alpha*(AngleY + omegaX*deltaT) + (1 - alpha)*accelAngleY
-            comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
+            omega = filter->Gx;
         }
+        
+        // Complementary Filter
+        // -----------------------------------------------------------------------
+        // CompAngle = alpha*(CompAngle + omega*deltaT) + (1 - alpha)*accelAngle
+        comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
         
         // Format comp. outputs to always be within the range of 0 to 2*pi
         while(comp[idx] >= TWO_PI)
@@ -206,43 +198,52 @@ SixCompUpdate(tSixAxis *psFilter)
         }
         
         // Save comp. filter value
-        psFilter->pfCompAngle[idx] = comp[idx];
+        if(idx == 0)
+        {
+            filter->compAngleX = comp[idx];
+        }
+        else
+        {
+            filter->compAngleY = comp[idx];
+        }
+        
     }
 }
 
 
 void 
-SixCompAnglesGet(tSixAxis *psFilter, float *pfCompAngleX, float *pfCompAngleY)
+SixCompAnglesGet(tSixAxis *filter, float *XAngle, float *YAngle)
 {
     // Transfer structure's updated comp. filter's angles
-    if(pfCompAngleX)
+    // Check if valid addresses were passed as well.
+    if(XAngle)
     {
-        *pfCompAngleX = psFilter->pfCompAngle[0];
+        *XAngle = filter->compAngleX;
     }
-    if(pfCompAngleY)
+    if(YAngle)
     {
-        *pfCompAngleY = psFilter->pfCompAngle[1];
+        *YAngle = filter->compAngleY;
     }
 }
 
 
 void 
-SixCompAccelUpdate(tSixAxis *psFilter, float fAccelX, float fAccelY, float fAccelZ)
+SixCompAccelUpdate(tSixAxis *filter, float accelX, float accelY, float accelZ)
 {
     // Save values to structure
-    psFilter->pfAccel[0] = fAccelX;
-    psFilter->pfAccel[1] = fAccelY;
-    psFilter->pfAccel[2] = fAccelZ;
+    filter->Ax = accelX;
+    filter->Ay = accelY;
+    filter->Az = accelZ;
 }
 
 
 void 
-SixCompGyroUpdate(tSixAxis *psFilter, float fGyroX, float fGyroY, float fGyroZ)
+SixCompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY, float gyroZ)
 {
     // Save values to structure
-    psFilter->pfGyro[0] = fGyroX;
-    psFilter->pfGyro[1] = fGyroY;
-    psFilter->pfGyro[2] = fGyroZ;
+    filter->Gx = gyroX;
+    filter->Gy = gyroY;
+    filter->Gz = gyroZ;
 }
 
 

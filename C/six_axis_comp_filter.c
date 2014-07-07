@@ -54,52 +54,8 @@
 #define SQ(x) 		                    ((x)*(x))
 
 //*********************************************************************************
-// Functions
+// External Functions
 //*********************************************************************************
-void
-SixCompAccelCalculate(tSixAxis *filter)
-{
-    uint8_t idx;
-    float angle[2];
-    
-    // Angle made by X axis acceleration vector relative to ground
-    // accelAngleX = atan(Ax, sqrt( SQ(Ay) + SQ(Az) )
-    angle[0] = atan2f(filter->Ax, sqrtf( SQ(filter->Ay) + SQ(filter->Az) ) );
-    
-    // Angle made by Y axis acceleration vector relative to ground
-    // accelAngleY = atan(Ay, sqrt( SQ(Ax) + SQ(Az) )
-    angle[1] = atan2f(filter->Ay, sqrtf( SQ(filter->Ax) + SQ(filter->Az) ) );
-    
-    // Check to see which quadrant of the unit circle the angle lies in
-    // and format the angle to lie in the range of 0 to 2*PI
-    for(idx = 0; idx < 2; idx++)
-    {
-        if(filter->Az < 0.0f)
-        {
-            // Angle lies in Quadrant 2 or Quadrant 3 of
-            // the unit circle
-            angle[idx] = PI - angle[idx];
-        }
-        else if(filter->Az > 0.0f && angle[idx] < 0.0f)
-        {
-            // Angle lies in Quadrant 4 of the unit circle
-            angle[idx] = TWO_PI + angle[idx];
-        }
-        
-        // If both of the previous conditions were not satisfied, then
-        // the angle must lie in Quadrant 1
-        
-        // Save accelerometer angle to structure
-        if(idx == 0)
-        {
-            filter->accelAngleX = angle[idx];
-        }
-        else
-        {
-            filter->accelAngleY = angle[idx];
-        }
-    }
-}
 
 void 
 SixCompInit(tSixAxis *filter, float deltaT, float tau)
@@ -246,4 +202,52 @@ SixCompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY, float gyroZ)
     filter->Gz = gyroZ;
 }
 
+//*********************************************************************************
+// Internal Functions
+//*********************************************************************************
+
+void
+SixCompAccelCalculate(tSixAxis *filter)
+{
+    uint8_t idx;
+    float angle[2];
+    
+    // Angle made by X axis acceleration vector relative to ground
+    // accelAngleX = atan(Ax, sqrt( SQ(Ay) + SQ(Az) )
+    angle[0] = atan2f(filter->Ax, sqrtf( SQ(filter->Ay) + SQ(filter->Az) ) );
+    
+    // Angle made by Y axis acceleration vector relative to ground
+    // accelAngleY = atan(Ay, sqrt( SQ(Ax) + SQ(Az) )
+    angle[1] = atan2f(filter->Ay, sqrtf( SQ(filter->Ax) + SQ(filter->Az) ) );
+    
+    // Check to see which quadrant of the unit circle the angle lies in
+    // and format the angle to lie in the range of 0 to 2*PI
+    for(idx = 0; idx < 2; idx++)
+    {
+        if(filter->Az < 0.0f)
+        {
+            // Angle lies in Quadrant 2 or Quadrant 3 of
+            // the unit circle
+            angle[idx] = PI - angle[idx];
+        }
+        else if(filter->Az > 0.0f && angle[idx] < 0.0f)
+        {
+            // Angle lies in Quadrant 4 of the unit circle
+            angle[idx] = TWO_PI + angle[idx];
+        }
+        
+        // If both of the previous conditions were not satisfied, then
+        // the angle must lie in Quadrant 1
+        
+        // Save accelerometer angle to structure
+        if(idx == 0)
+        {
+            filter->accelAngleX = angle[idx];
+        }
+        else
+        {
+            filter->accelAngleY = angle[idx];
+        }
+    }
+}
 

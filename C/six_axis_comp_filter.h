@@ -113,9 +113,15 @@ tSixAxis;
 //      Initializes the complementary filter.
 // Parameters:
 //      filter - A tSixAxis instantiation.
-//      deltaT - The time delta between updates expressed in seconds.
+//      deltaT - The time delta updates expressed in seconds. This value
+//          should be set to how often the filter is updated with new values,
+//          which should be on a regular interval.
 //      tau - Max allowable time until gyro drifts too far and comp. filter shifts
-//             its weight to the accelerometer expressed in seconds.     
+//          its weight to the accelerometer expressed in seconds. This value
+//          is usually based on the drift rate of the gyro. For example, if
+//          gyro drifts at a rate of 0.5 degrees per second and the tolerance
+//          of max allowable drift is 1 degree, then tau should be set to 2 seconds
+//          as it will take 2 seconds to drift 1 degree.    
 // Returns:
 //      Nothing.
 // 
@@ -154,11 +160,11 @@ extern void SixCompUpdate(tSixAxis *filter);
 // Parameters:
 //      filter - A tSixAxis instantiation.
 //      XAngle - Address of a float to store the angle relative to the X axis into.
-//               The number 0 can be passed as a parameter if this angle is not
-//               needed.
+//          The number 0 can be passed as a parameter if this angle is not
+//          needed.
 //      YAngle - Address of a float to store the angle relative to the Y axis into.
-//               The number 0 can be passed as a parameter if this angle is not
-//               needed.
+//          The number 0 can be passed as a parameter if this angle is not
+//          needed.
 // Returns:
 //      Nothing.
 // 

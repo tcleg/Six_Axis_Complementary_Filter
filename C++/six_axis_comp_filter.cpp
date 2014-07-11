@@ -1,7 +1,7 @@
 //*********************************************************************************
 // Six Axis Complementary Filter - Platform Independent
 // 
-// Revision: 1.2
+// Revision: 1.3
 // 
 // Description: Takes gyroscope and accelerometer readings and produces a "fused"
 // reading that is more accurate. Relies heavily on floating point arithmetic
@@ -57,8 +57,8 @@
 // External Class Functions
 //*********************************************************************************
 
-SixAxisComp::
-SixAxisComp(float deltaT, float tau)
+CompSixAxis::
+CompSixAxis(float deltaT, float tau)
 {
     // Save value to structure
     deltaT = deltaT;
@@ -67,7 +67,7 @@ SixAxisComp(float deltaT, float tau)
     alpha = tau/(tau + deltaT);
 }
 
-void SixAxisComp::
+void CompSixAxis::
 CompStart()
 {
     // Calculate accelerometer angles
@@ -78,7 +78,7 @@ CompStart()
     compAngleY = accelAngleY;
 }
 
-void SixAxisComp::
+void CompSixAxis::
 CompUpdate()
 {   
     // Make the data easier to work with and visualize.
@@ -100,23 +100,13 @@ CompUpdate()
     {
         // Work with comp. angles that are closest in distance to the accelerometer angle
         // on the unit circle. This allows for significantly faster filter convergence.
-        if(comp[idx] > accAng[idx])
+        if(comp[idx] > accAng[idx] + PI)
         {
-            // AccelAngle + (2*pi - CompFilterAngle) < CompFilterAngle - AccelAngle
-            if( accAng[idx] + (TWO_PI - comp[idx]) < comp[idx] - accAng[idx] )
-            {
-                // CompFilterAngle = CompFilterAngle - 2*pi
-                comp[idx] = comp[idx] - TWO_PI;
-            }
-        } 
-        else
+            comp[idx] = comp[idx] - TWO_PI;
+        }
+        else if(accAng[idx] > comp[idx] + PI)
         {
-            // AccelAngle + (2*pi - AccelAngle) < AccelAngle - CompFilterAngle
-            if( comp[idx] + (TWO_PI - accAng[idx]) < accAng[idx] - comp[idx] )
-            {
-                // CompFilterAngle = CompFilterAngle + 2*pi
-                comp[idx] = comp[idx] + TWO_PI;
-            }
+            comp[idx] = comp[idx] + TWO_PI;
         }
         
         // Acquire the correct gyroscopic angular velocity
@@ -161,7 +151,7 @@ CompUpdate()
     }
 }
 
-void SixAxisComp::
+void CompSixAxis::
 CompAnglesGet(float *XAngle, float *YAngle)
 {
     // Transfer class's updated comp. filter's angles
@@ -176,7 +166,7 @@ CompAnglesGet(float *XAngle, float *YAngle)
     }
 }
 
-void SixAxisComp::
+void CompSixAxis::
 CompAccelUpdate(float accelX, float accelY, float accelZ)
 {
     // Save values to class
@@ -185,7 +175,7 @@ CompAccelUpdate(float accelX, float accelY, float accelZ)
     Az = accelZ;
 }
 
-void SixAxisComp::
+void CompSixAxis::
 CompGyroUpdate(float gyroX, float gyroY, float gyroZ)
 {
     // Save values to class
@@ -198,7 +188,7 @@ CompGyroUpdate(float gyroX, float gyroY, float gyroZ)
 // Internal Class Functions
 //*********************************************************************************
 
-void SixAxisComp::
+void CompSixAxis::
 CompAccelCalculate()
 {
     uint8_t idx;

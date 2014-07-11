@@ -1,7 +1,7 @@
 //*********************************************************************************
 // Six Axis Complementary Filter - Platform Independent
 // 
-// Revision: 1.2
+// Revision: 1.3
 // 
 // Description: Takes gyroscope and accelerometer readings and produces a "fused"
 // reading that is more accurate. Relies heavily on floating point arithmetic

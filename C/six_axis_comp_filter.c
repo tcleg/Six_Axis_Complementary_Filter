@@ -1,7 +1,7 @@
 //*********************************************************************************
 // Six Axis Complementary Filter - Platform Independent
 // 
-// Revision: 1.2
+// Revision: 1.3
 // 
 // Description: Takes gyroscope and accelerometer readings and produces a "fused"
 // reading that is more accurate. Relies heavily on floating point arithmetic
@@ -91,7 +91,6 @@ SixCompUpdate(tSixAxis *filter)
     float alpha = filter->alpha;
     float deltaT = filter->deltaT;
     
-    
     // Calculate accelerometer angles
     SixCompAccelCalculate(filter);
     
@@ -105,23 +104,13 @@ SixCompUpdate(tSixAxis *filter)
     {
         // Work with comp. angles that are closest in distance to the accelerometer angle
         // on the unit circle. This allows for significantly faster filter convergence.
-        if(comp[idx] > accAng[idx])
+        if(comp[idx] > accAng[idx] + PI)
         {
-            // AccelAngle + (2*pi - CompFilterAngle) < CompFilterAngle - AccelAngle
-            if( accAng[idx] + (TWO_PI - comp[idx]) < comp[idx] - accAng[idx] )
-            {
-                // CompFilterAngle = CompFilterAngle - 2*pi
-                comp[idx] = comp[idx] - TWO_PI;
-            }
-        } 
-        else
+            comp[idx] = comp[idx] - TWO_PI;
+        }
+        else if(accAng[idx] > comp[idx] + PI)
         {
-            // AccelAngle + (2*pi - AccelAngle) < AccelAngle - CompFilterAngle
-            if( comp[idx] + (TWO_PI - accAng[idx]) < accAng[idx] - comp[idx] )
-            {
-                // CompFilterAngle = CompFilterAngle + 2*pi
-                comp[idx] = comp[idx] + TWO_PI;
-            }
+            comp[idx] = comp[idx] + TWO_PI;
         }
         
         // Acquire the correct gyroscopic angular velocity
@@ -133,13 +122,11 @@ SixCompUpdate(tSixAxis *filter)
         }
         else
         {
-            // Take rotational velocity about the X axis
+            // Take rotational velocity about the X axis as normal
             omega = filter->Gx;
         }
         
-        // Complementary Filter
-        // -----------------------------------------------------------------------
-        // CompAngle = alpha*(CompAngle + omega*deltaT) + (1 - alpha)*accelAngle
+        // Complementary Filter - This is where the magic happens
         comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
         
         // Format comp. outputs to always be within the range of 0 to 2*pi

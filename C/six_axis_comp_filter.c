@@ -58,7 +58,7 @@
 //*********************************************************************************
 
 void 
-SixCompInit(tSixAxis *filter, float deltaT, float tau)
+CompInit(tSixAxis *filter, float deltaT, float tau)
 {
     // Save value to structure
     filter->deltaT = deltaT;
@@ -69,10 +69,10 @@ SixCompInit(tSixAxis *filter, float deltaT, float tau)
 
 
 void 
-SixCompStart(tSixAxis *filter)
+CompStart(tSixAxis *filter)
 {
     // Calculate accelerometer angles
-    SixCompAccelCalculate(filter);
+    CompAccelCalculate(filter);
     
     // Initialize filter to accel angles
     filter->compAngleX = filter->accelAngleX;
@@ -81,7 +81,7 @@ SixCompStart(tSixAxis *filter)
 
 
 void 
-SixCompUpdate(tSixAxis *filter)
+CompUpdate(tSixAxis *filter)
 {   
     // Make the data easier to work with and visualize.
     uint8_t idx;
@@ -92,7 +92,7 @@ SixCompUpdate(tSixAxis *filter)
     float deltaT = filter->deltaT;
     
     // Calculate accelerometer angles
-    SixCompAccelCalculate(filter);
+    CompAccelCalculate(filter);
     
     // Gather the current accelerometer and complementary filter angles
     accAng[0] = filter->accelAngleX;
@@ -155,7 +155,7 @@ SixCompUpdate(tSixAxis *filter)
 
 
 void 
-SixCompAnglesGet(tSixAxis *filter, float *XAngle, float *YAngle)
+CompAnglesGet(tSixAxis *filter, float *XAngle, float *YAngle)
 {
     // Transfer structure's updated comp. filter's angles
     // Check if valid addresses were passed as well.
@@ -171,7 +171,7 @@ SixCompAnglesGet(tSixAxis *filter, float *XAngle, float *YAngle)
 
 
 void 
-SixCompAccelUpdate(tSixAxis *filter, float accelX, float accelY, float accelZ)
+CompAccelUpdate(tSixAxis *filter, float accelX, float accelY, float accelZ)
 {
     // Save values to structure
     filter->Ax = accelX;
@@ -181,7 +181,7 @@ SixCompAccelUpdate(tSixAxis *filter, float accelX, float accelY, float accelZ)
 
 
 void 
-SixCompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY, float gyroZ)
+CompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY, float gyroZ)
 {
     // Save values to structure
     filter->Gx = gyroX;
@@ -194,7 +194,7 @@ SixCompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY, float gyroZ)
 //*********************************************************************************
 
 void
-SixCompAccelCalculate(tSixAxis *filter)
+CompAccelCalculate(tSixAxis *filter)
 {
     uint8_t idx;
     float angle[2];

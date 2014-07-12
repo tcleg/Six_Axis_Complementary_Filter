@@ -108,7 +108,7 @@ tSixAxis;
 //*********************************************************************************
 
 // 
-// Six Axis Complementary Filter Initialize
+// Complementary Filter Initialize
 // Description:
 //      Initializes the complementary filter.
 // Parameters:
@@ -125,13 +125,13 @@ tSixAxis;
 // Returns:
 //      Nothing.
 // 
-extern void SixCompInit(tSixAxis *filter, float deltaT, float tau);
+extern void CompInit(tSixAxis *filter, float deltaT, float tau);
 
 // 
-// Six Axis Complementary Filter Start
+// Complementary Filter Start
 // Description:
-//      Should be called once before SixCompUpdate can be called at the next interval.
-//      SixCompAccelUpdate must be called before this function.
+//      Should be called once before CompUpdate can be called at the next interval.
+//      CompAccelUpdate must be called before this function.
 //      This function helps the filter to converge faster. If this function is not
 //      called, the filter will still converge, but it will take longer.
 // Parameters:
@@ -139,10 +139,10 @@ extern void SixCompInit(tSixAxis *filter, float deltaT, float tau);
 // Returns:
 //      Nothing.
 // 
-extern void SixCompStart(tSixAxis *filter);
+extern void CompStart(tSixAxis *filter);
 
 // 
-// Six Axis Complementary Filter Update
+// Complementary Filter Update
 // Description:
 //      Must be called on a regular interval specified by deltaT.
 // Parameters:
@@ -150,10 +150,10 @@ extern void SixCompStart(tSixAxis *filter);
 // Returns:
 //      Nothing.
 // 
-extern void SixCompUpdate(tSixAxis *filter);
+extern void CompUpdate(tSixAxis *filter);
 
 // 
-// Six Axis Complementary Filter Angles Get
+// Complementary Filter Angles Get
 // Description:
 //      Acquires the angles in radians relative to ground along the positive
 //      X and Y axes.
@@ -168,11 +168,11 @@ extern void SixCompUpdate(tSixAxis *filter);
 // Returns:
 //      Nothing.
 // 
-extern void SixCompAnglesGet(tSixAxis *filter, float *XAngle,
+extern void CompAnglesGet(tSixAxis *filter, float *XAngle,
                              float *YAngle);
 
 // 
-// Six Axis Complementary Filter Accelerometer Update
+// Complementary Filter Accelerometer Update
 // Description:
 //      Updates the comp. filter with new accelerometer values.
 // Parameters:
@@ -183,11 +183,11 @@ extern void SixCompAnglesGet(tSixAxis *filter, float *XAngle,
 // Returns:
 //      Nothing.
 // 
-extern void SixCompAccelUpdate(tSixAxis *filter, float accelX, float accelY,
+extern void CompAccelUpdate(tSixAxis *filter, float accelX, float accelY,
                                float accelZ);
                                
 // 
-// Six Axis Complementary Filter Gyroscope Update
+// Complementary Filter Gyroscope Update
 // Description:
 //      Updates the comp. filter with new gyroscope values.
 // Parameters:
@@ -198,7 +198,7 @@ extern void SixCompAccelUpdate(tSixAxis *filter, float accelX, float accelY,
 // Returns:
 //      Nothing.
 //                                
-extern void SixCompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY,
+extern void CompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY,
                               float gyroZ);
 
 // 

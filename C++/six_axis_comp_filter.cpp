@@ -122,9 +122,7 @@ CompUpdate()
             omega = Gx;
         }
         
-        // Complementary Filter
-        // -----------------------------------------------------------------------
-        // CompAngle = alpha*(CompAngle + omega*deltaT) + (1 - alpha)*accelAngle
+        // Complementary Filter - This is where the magic happens.
         comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
         
         // Format comp. outputs to always be within the range of 0 to 2*pi

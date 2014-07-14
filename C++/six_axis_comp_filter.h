@@ -73,16 +73,15 @@ CompSixAxis
         // Description:
         //      Initializes the complementary filter.
         // Parameters:
-        // filter - A tSixAxis instantiation.
-        // deltaT - The time delta updates expressed in seconds. This value
+        // deltaT - The time delta update period expressed in seconds. This value
         //     should be set to how often the filter is updated with new values,
         //     which should be on a regular interval.
-        // tau - Max allowable time until gyro drifts too far and comp. filter shifts
-        //     its weight to the accelerometer expressed in seconds. This value
-        //     is usually based on the drift rate of the gyro. For example, if
-        //     gyro drifts at a rate of 0.5 degrees per second and the tolerance
-        //     of max allowable drift is 1 degree, then tau should be set to 2 seconds
-        //     as it will take 2 seconds to drift 1 degree. 
+        // tau - Max allowable time until gyro drifts too far and comp. filter 
+        //     shifts its weight to the accelerometer expressed in seconds. This 
+        //     value is usually based on the drift rate of the gyro. For example, 
+        //     if the gyro drifts at a rate of 0.5 degrees per second and the 
+        //     tolerance of max allowable drift is 1 degree, then tau should be set 
+        //     to 2 seconds as it will take 2 seconds to drift 1 degree. 
         // Returns:
         //      None.
         // 
@@ -91,10 +90,11 @@ CompSixAxis
         // 
         // Complementary Filter Start
         // Description:
-        //      Should be called once before CompUpdate can be called at the next interval.
-        //      CompAccelUpdate must be called before this function.
-        //      This function helps the filter to converge faster. If this function is not
-        //      called, the filter will still converge, but it will take longer.
+        //      Should be called once before CompUpdate can be called at the next 
+        //      interval. CompAccelUpdate must be called before this function.
+        //      This function helps the filter to converge faster. If this function 
+        //      is not called, the filter will still converge, but it will take 
+        //      longer.
         // Parameters:
         //      None.
         // Returns:
@@ -118,15 +118,15 @@ CompSixAxis
         // 
         // Complementary Filter Angles Get
         // Description:
-        //      Acquires the angles in radians relative to ground along the positive
-        //      X and Y axes.
+        //      Acquires the angles in radians relative to ground along the 
+        //      positive X and Y axes.
         // Parameters:
-        //      XAngle - Address of a float to store the angle relative to the X axis into.
-        //          The number 0 can be passed as a parameter if this angle is not
-        //          needed.
-        //      YAngle - Address of a float to store the angle relative to the Y axis into.
-        //          The number 0 can be passed as a parameter if this angle is not
-        //          needed.
+        //      XAngle - Address of a float to store the angle relative to the X 
+        //          axis into. The number 0 can be passed as a parameter if this 
+        //          angle is not needed.
+        //      YAngle - Address of a float to store the angle relative to the Y 
+        //          axis into. The number 0 can be passed as a parameter if this 
+        //          angle is not needed.
         // Returns:
         //      None.
         // 

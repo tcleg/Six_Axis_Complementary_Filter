@@ -100,7 +100,7 @@ typedef struct
     // 
     float compAngleX, compAngleY;
 }
-tSixAxis;
+SixAxis;
 
 
 //*********************************************************************************
@@ -112,20 +112,20 @@ tSixAxis;
 // Description:
 //      Initializes the complementary filter.
 // Parameters:
-//      filter - A tSixAxis instantiation.
-//      deltaT - The time delta updates expressed in seconds. This value
+//      filter - A SixAxis instantiation.
+//      deltaT - The time delta update period expressed in seconds. This value
 //          should be set to how often the filter is updated with new values,
 //          which should be on a regular interval.
 //      tau - Max allowable time until gyro drifts too far and comp. filter shifts
 //          its weight to the accelerometer expressed in seconds. This value
-//          is usually based on the drift rate of the gyro. For example, if
+//          is usually based on the drift rate of the gyro. For example, if the
 //          gyro drifts at a rate of 0.5 degrees per second and the tolerance
 //          of max allowable drift is 1 degree, then tau should be set to 2 seconds
 //          as it will take 2 seconds to drift 1 degree.    
 // Returns:
 //      Nothing.
 // 
-extern void CompInit(tSixAxis *filter, float deltaT, float tau);
+extern void CompInit(SixAxis *filter, float deltaT, float tau);
 
 // 
 // Complementary Filter Start
@@ -135,22 +135,22 @@ extern void CompInit(tSixAxis *filter, float deltaT, float tau);
 //      This function helps the filter to converge faster. If this function is not
 //      called, the filter will still converge, but it will take longer.
 // Parameters:
-//      filter - A tSixAxis instantiation.
+//      filter - A SixAxis instantiation.
 // Returns:
 //      Nothing.
 // 
-extern void CompStart(tSixAxis *filter);
+extern void CompStart(SixAxis *filter);
 
 // 
 // Complementary Filter Update
 // Description:
 //      Must be called on a regular interval specified by deltaT.
 // Parameters:
-//      filter - A tSixAxis instantiation.
+//      filter - A SixAxis instantiation.
 // Returns:
 //      Nothing.
 // 
-extern void CompUpdate(tSixAxis *filter);
+extern void CompUpdate(SixAxis *filter);
 
 // 
 // Complementary Filter Angles Get
@@ -158,7 +158,7 @@ extern void CompUpdate(tSixAxis *filter);
 //      Acquires the angles in radians relative to ground along the positive
 //      X and Y axes.
 // Parameters:
-//      filter - A tSixAxis instantiation.
+//      filter - A SixAxis instantiation.
 //      XAngle - Address of a float to store the angle relative to the X axis into.
 //          The number 0 can be passed as a parameter if this angle is not
 //          needed.
@@ -168,38 +168,38 @@ extern void CompUpdate(tSixAxis *filter);
 // Returns:
 //      Nothing.
 // 
-extern void CompAnglesGet(tSixAxis *filter, float *XAngle,
-                             float *YAngle);
+extern void CompAnglesGet(SixAxis *filter, float *XAngle,
+                          float *YAngle);
 
 // 
 // Complementary Filter Accelerometer Update
 // Description:
 //      Updates the comp. filter with new accelerometer values.
 // Parameters:
-//      filter - A tSixAxis instantiation.
+//      filter - A SixAxis instantiation.
 //      accelX - Acceleration vector along X axis expressed in m/s^2
 //      accelY - Acceleration vector along Y axis expressed in m/s^2
 //      accelZ - Acceleration vector along Z axis expressed in m/s^2
 // Returns:
 //      Nothing.
 // 
-extern void CompAccelUpdate(tSixAxis *filter, float accelX, float accelY,
-                               float accelZ);
+extern void CompAccelUpdate(SixAxis *filter, float accelX, float accelY,
+                            float accelZ);
                                
 // 
 // Complementary Filter Gyroscope Update
 // Description:
 //      Updates the comp. filter with new gyroscope values.
 // Parameters:
-//      filter - A tSixAxis instantiation.
+//      filter - A SixAxis instantiation.
 //      gyroX - Angular velocity around X axis expressed in rad/s
 //      gyroY - Angular velocity around Y axis expressed in rad/s
 //      gyroZ - Angular velocity around Z axis expressed in rad/s
 // Returns:
 //      Nothing.
 //                                
-extern void CompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY,
-                              float gyroZ);
+extern void CompGyroUpdate(SixAxis *filter, float gyroX, float gyroY,
+                           float gyroZ);
 
 // 
 // End of C Binding

@@ -51,10 +51,10 @@
 #define PI                              3.1415926f
 #define HALF_PI                         1.5707963f
 #define TWO_PI                          6.2831853f
-#define SQ(x) 		                    ((x)*(x))
+#define SQRE(x) 		                ((x)*(x))
 
 //*********************************************************************************
-// External Class Functions
+// Public Class Functions
 //*********************************************************************************
 
 CompSixAxis::
@@ -183,7 +183,7 @@ CompGyroUpdate(float gyroX, float gyroY, float gyroZ)
 }
 
 //*********************************************************************************
-// Internal Class Functions
+// Private Class Functions
 //*********************************************************************************
 
 void CompSixAxis::
@@ -194,11 +194,11 @@ CompAccelCalculate()
     
     // Angle made by X axis acceleration vector relative to ground
     // accelAngleX = atan(Ax, sqrt( SQ(Ay) + SQ(Az) )
-    angle[0] = atan2f(Ax, sqrtf( SQ(Ay) + SQ(Az) ) );
+    angle[0] = atan2f(Ax, sqrtf( SQRE(Ay) + SQRE(Az) ) );
     
     // Angle made by Y axis acceleration vector relative to ground
     // accelAngleY = atan(Ay, sqrt( SQ(Ax) + SQ(Az) )
-    angle[1] = atan2f(Ay, sqrtf( SQ(Ax) + SQ(Az) ) );
+    angle[1] = atan2f(Ay, sqrtf( SQRE(Ax) + SQRE(Az) ) );
     
     // Check to see which quadrant of the unit circle the angle lies in
     // and format the angle to lie in the range of 0 to 2*PI

@@ -51,14 +51,14 @@
 #define PI                              3.1415926f
 #define HALF_PI                         1.5707963f
 #define TWO_PI                          6.2831853f
-#define SQ(x) 		                    ((x)*(x))
+#define SQRE(x) 		                ((x)*(x))
 
 //*********************************************************************************
 // External Functions
 //*********************************************************************************
 
 void 
-CompInit(tSixAxis *filter, float deltaT, float tau)
+CompInit(SixAxis *filter, float deltaT, float tau)
 {
     // Save value to structure
     filter->deltaT = deltaT;
@@ -69,7 +69,7 @@ CompInit(tSixAxis *filter, float deltaT, float tau)
 
 
 void 
-CompStart(tSixAxis *filter)
+CompStart(SixAxis *filter)
 {
     // Calculate accelerometer angles
     CompAccelCalculate(filter);
@@ -81,7 +81,7 @@ CompStart(tSixAxis *filter)
 
 
 void 
-CompUpdate(tSixAxis *filter)
+CompUpdate(SixAxis *filter)
 {   
     // Make the data easier to work with and visualize.
     uint8_t idx;
@@ -155,7 +155,7 @@ CompUpdate(tSixAxis *filter)
 
 
 void 
-CompAnglesGet(tSixAxis *filter, float *XAngle, float *YAngle)
+CompAnglesGet(SixAxis *filter, float *XAngle, float *YAngle)
 {
     // Transfer structure's updated comp. filter's angles
     // Check if valid addresses were passed as well.
@@ -171,7 +171,7 @@ CompAnglesGet(tSixAxis *filter, float *XAngle, float *YAngle)
 
 
 void 
-CompAccelUpdate(tSixAxis *filter, float accelX, float accelY, float accelZ)
+CompAccelUpdate(SixAxis *filter, float accelX, float accelY, float accelZ)
 {
     // Save values to structure
     filter->Ax = accelX;
@@ -181,7 +181,7 @@ CompAccelUpdate(tSixAxis *filter, float accelX, float accelY, float accelZ)
 
 
 void 
-CompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY, float gyroZ)
+CompGyroUpdate(SixAxis *filter, float gyroX, float gyroY, float gyroZ)
 {
     // Save values to structure
     filter->Gx = gyroX;
@@ -194,18 +194,18 @@ CompGyroUpdate(tSixAxis *filter, float gyroX, float gyroY, float gyroZ)
 //*********************************************************************************
 
 void
-CompAccelCalculate(tSixAxis *filter)
+CompAccelCalculate(SixAxis *filter)
 {
     uint8_t idx;
     float angle[2];
     
     // Angle made by X axis acceleration vector relative to ground
     // accelAngleX = atan(Ax, sqrt( SQ(Ay) + SQ(Az) )
-    angle[0] = atan2f(filter->Ax, sqrtf( SQ(filter->Ay) + SQ(filter->Az) ) );
+    angle[0] = atan2f(filter->Ax, sqrtf( SQRE(filter->Ay) + SQRE(filter->Az) ) );
     
     // Angle made by Y axis acceleration vector relative to ground
     // accelAngleY = atan(Ay, sqrt( SQ(Ax) + SQ(Az) )
-    angle[1] = atan2f(filter->Ay, sqrtf( SQ(filter->Ax) + SQ(filter->Az) ) );
+    angle[1] = atan2f(filter->Ay, sqrtf( SQRE(filter->Ax) + SQRE(filter->Az) ) );
     
     // Check to see which quadrant of the unit circle the angle lies in
     // and format the angle to lie in the range of 0 to 2*PI

@@ -1,7 +1,7 @@
 //*********************************************************************************
 // Six Axis Complementary Filter - Platform Independent
 // 
-// Revision: 1.4
+// Revision: 1.5
 // 
 // Description: Takes gyroscope and accelerometer readings and produces a "fused"
 // reading that is more accurate. Relies heavily on floating point arithmetic
@@ -88,6 +88,7 @@ CompUpdate(SixAxis *filter)
     float omega;
     float accAng[2];
     float comp[2];
+    float gyroAngle;
     float alpha = filter->alpha;
     float deltaT = filter->deltaT;
     
@@ -126,8 +127,14 @@ CompUpdate(SixAxis *filter)
             omega = filter->Gx;
         }
         
-        // Complementary Filter - This is where the magic happens
-        comp[idx] = alpha*(comp[idx] + omega*deltaT) + (1.0f - alpha)*accAng[idx];
+        // Integrate the gyroscope's angular velocity reading to get an angle
+        gyroAngle = comp[idx] + omega*deltaT;
+        
+        // Complementary Filter - This is where the magic happens. Weighting
+        // is applied to the gyroscope's angular position and accelerometer's 
+        // angular position and they are put together to form one angle, the
+        // complementary filter angle.
+        comp[idx] = alpha*gyroAngle + (1.0f - alpha)*accAng[idx];
         
         // Format comp. outputs to always be within the range of 0 to 2*pi
         while(comp[idx] >= TWO_PI)

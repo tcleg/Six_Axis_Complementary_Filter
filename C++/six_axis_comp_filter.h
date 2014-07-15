@@ -73,7 +73,7 @@ CompSixAxis
         // Description:
         //      Initializes the complementary filter.
         // Parameters:
-        // deltaT - The time delta update period expressed in seconds. This value
+        // deltaTime - The time delta update period expressed in seconds. This value
         //     should be set to how often the filter is updated with new values,
         //     which should be on a regular interval.
         // tau - Max allowable time until gyro drifts too far and comp. filter 
@@ -85,7 +85,7 @@ CompSixAxis
         // Returns:
         //      None.
         // 
-        CompSixAxis(float deltaT, float tau);
+        CompSixAxis(float deltaTime, float tau);
         
         // 
         // Complementary Filter Start
@@ -193,6 +193,28 @@ CompSixAxis
         // Extrapolates angles according to accelerometer readings
         // 
         void CompAccelCalculate();
+        
+        // 
+        // Check to see which quadrant of the unit circle the angle lies in
+        // and format the angle to lie in the range of 0 to 2*PI
+        // 
+        float FormatAccelRange(float accelAngle, float accelZ)
+        
+        // 
+        // Formats the Comp. Angle for faster filter convergence
+        // 
+        float FormatFastConverge(float compAngle, float accAngle);
+        
+        // 
+        // Formats the complimentary filter angle to always lie within the range of
+        // 0 to 2*pi
+        // 
+        float FormatRange0to2PI(float compAngle);
+        
+        // 
+        // Complimentary Filter - This is where the magic happens.
+        // 
+        float CompFilterProcess(float compAngle, float accelAngle, float omega);
 }
 
 #endif  // SIX_AXIS_COMP_FILTER_H

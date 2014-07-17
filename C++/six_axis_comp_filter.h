@@ -51,16 +51,6 @@
 #include <stdint.h>
 
 //*********************************************************************************
-// Macros and Globals
-//*********************************************************************************
-
-// Converts a floating point number expressed in degrees to radians                  
-#define RADIANS_F(deg)        ((deg)*0.0174532f)
-
-// Converts a floating point number expressed in radians to degrees
-#define DEGREES_F(rad)        ((rad)*57.2957795f)
-
-//*********************************************************************************
 // Class
 //*********************************************************************************
 
@@ -74,14 +64,18 @@ CompSixAxis
         //      Initializes the complementary filter.
         // Parameters:
         // deltaTime - The time delta update period expressed in seconds. This value
-        //     should be set to how often the filter is updated with new values,
-        //     which should be on a regular interval.
+        //      should be set to how often the filter is updated with new values,
+        //      which should be on a regular interval. The smaller this value is,
+        //      the less noise there will be on the comp. filter's output.
         // tau - Max allowable time until gyro drifts too far and comp. filter 
-        //     shifts its weight to the accelerometer expressed in seconds. This 
-        //     value is usually based on the drift rate of the gyro. For example, 
-        //     if the gyro drifts at a rate of 0.5 degrees per second and the 
-        //     tolerance of max allowable drift is 1 degree, then tau should be set 
-        //     to 2 seconds as it will take 2 seconds to drift 1 degree. 
+        //      shifts its weight to the accelerometer expressed in seconds. This 
+        //      value is usually based on the drift rate of the gyro. For example, 
+        //      if the gyro drifts at a rate of 0.5 degrees per second and the 
+        //      tolerance of max allowable drift is 1 degree, then tau should be set 
+        //      to 2 seconds as it will take 2 seconds to drift 1 degree. The larger
+        //      this value is, the less noise there will be on the comp. filter's
+        //      output. In exchange, it will drift further from the correct angular
+        //      position.
         // Returns:
         //      None.
         // 
@@ -94,7 +88,7 @@ CompSixAxis
         //      interval. CompAccelUpdate must be called before this function.
         //      This function helps the filter to converge faster. If this function 
         //      is not called, the filter will still converge, but it will take 
-        //      longer.
+        //      longer initially.
         // Parameters:
         //      None.
         // Returns:
@@ -130,7 +124,7 @@ CompSixAxis
         // Returns:
         //      None.
         // 
-        void CompAnglesGet(float *XAngle, float *YAngle);
+        void CompAnglesGet(float &XAngle, float &YAngle);
         
         // 
         // Complementary Filter Accelerometer Update
@@ -157,6 +151,29 @@ CompSixAxis
         //      None.
         //                                
         void CompGyroUpdate(float gyroX, float gyroY, float gyroZ);
+        
+        // 
+        // Complementary Filter Degrees to Radians
+        // Description:
+        //      Converts degrees to radians.
+        // Parameters:
+        //      degrees - Value in degrees.
+        // Returns:
+        //      A value in radians.
+        // 
+        float CompDegreesToRadians(float degrees){ return degrees*0.0174532f; }
+        
+        // 
+        // Complementary Filter Radians to Degrees
+        // Description:
+        //      Converts radians to degrees.
+        // Parameters:
+        //      radians - Value in radians.
+        // Returns:
+        //      A value in degrees.
+        // 
+        float CompRadiansToDegrees(float radians){ return radians*57.2957795f; }
+
         
     private:
         //

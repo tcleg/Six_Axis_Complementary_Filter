@@ -54,6 +54,37 @@
 #define SQRE(x) 		                ((x)*(x))
 
 //*********************************************************************************
+// Internal Function Prototypes
+//*********************************************************************************
+
+// 
+// Extrapolates angles according to accelerometer readings
+// 
+void CompAccelCalculate();
+
+// 
+// Check to see which quadrant of the unit circle the angle lies in
+// and format the angle to lie in the range of 0 to 2*PI
+// 
+float FormatAccelRange(float accelAngle, float accelZ)
+
+// 
+// Formats the Comp. Angle for faster filter convergence
+// 
+float FormatFastConverge(float compAngle, float accAngle);
+
+// 
+// Formats the complimentary filter angle to always lie within the range of
+// 0 to 2*pi
+// 
+float FormatRange0to2PI(float compAngle);
+
+// 
+// Complimentary Filter - This is where the magic happens.
+// 
+float CompFilterProcess(float compAngle, float accelAngle, float omega);
+
+//*********************************************************************************
 // External Functions
 //*********************************************************************************
 
@@ -65,6 +96,18 @@ CompInit(SixAxis *filter, float deltaT, float tau)
     
     // Calculate weighting factor
     filter->alpha = tau/(tau + deltaT);
+    
+    // Initialize other structure variables
+    filter->compAngleX = 0;
+    filter->compAngleY = 0;
+    filter->accelAngleX = 0;
+    filter->accelAngleY = 0;
+    filter->Ax = 0;
+    filter->Ay = 0;
+    filter->Az = 0;
+    filter->Gx = 0;
+    filter->Gy = 0;
+    filter->Gz = 0;
 }
 
 
@@ -83,81 +126,21 @@ CompStart(SixAxis *filter)
 void 
 CompUpdate(SixAxis *filter)
 {   
-    // Make the data easier to work with and visualize.
-    uint8_t idx;
-    float omega;
-    float accAng[2];
-    float comp[2];
-    float gyroAngle;
-    float alpha = filter->alpha;
-    float deltaT = filter->deltaT;
-    
-    // Calculate accelerometer angles
+    // Calculate the accelerometer angles
     CompAccelCalculate(filter);
     
-    // Gather the current accelerometer and complementary filter angles
-    accAng[0] = filter->accelAngleX;
-    accAng[1] = filter->accelAngleY;
-    comp[0] = filter->compAngleX;
-    comp[1] = filter->compAngleY;
+    // Omega is the rotational velocity reported by the gyroscope. Though it seems
+    // strange, the rotational velocity about the Y axis must be projected back
+    // onto the X axis and then its sense of direction must be inverted in order to
+    // acquire positive angles about the X axis. This is shown below with -Gy being
+    // passed as a parameter.
+    filter->compAngleX = CompFilterProcess(filter->compAngleX, filter->accelAngleX, 
+                                           -(filter->Gy));
     
-    for(idx = 0; idx < 2; idx++)
-    {
-        // Work with comp. angles that are closest in distance to the accelerometer angle
-        // on the unit circle. This allows for significantly faster filter convergence.
-        if(comp[idx] > accAng[idx] + PI)
-        {
-            comp[idx] = comp[idx] - TWO_PI;
-        }
-        else if(accAng[idx] > comp[idx] + PI)
-        {
-            comp[idx] = comp[idx] + TWO_PI;
-        }
-        
-        // Acquire the correct gyroscopic angular velocity
-        if( idx == 0)
-        {
-            // Take rotational velocity about the Y axis and invert the sense of
-            // direction
-            omega = -(filter->Gy);
-        }
-        else
-        {
-            // Take rotational velocity about the X axis as normal
-            omega = filter->Gx;
-        }
-        
-        // Integrate the gyroscope's angular velocity reading to get an angle
-        gyroAngle = comp[idx] + omega*deltaT;
-        
-        // Complementary Filter - This is where the magic happens. Weighting
-        // is applied to the gyroscope's angular position and accelerometer's 
-        // angular position and they are put together to form one angle, the
-        // complementary filter angle.
-        comp[idx] = alpha*gyroAngle + (1.0f - alpha)*accAng[idx];
-        
-        // Format comp. outputs to always be within the range of 0 to 2*pi
-        while(comp[idx] >= TWO_PI)
-        {
-            comp[idx] = comp[idx] - TWO_PI;
-        }
-        
-        while(comp[idx] < 0.0f)
-        {
-            comp[idx] = comp[idx] + TWO_PI;
-        }
-        
-        // Save comp. filter value
-        if(idx == 0)
-        {
-            filter->compAngleX = comp[idx];
-        }
-        else
-        {
-            filter->compAngleY = comp[idx];
-        }
-        
-    }
+    // In this case, the rotational velocity about the X axis (Gx) is projected back
+    // onto the Y axis and its sense of direction is already correct.
+    filter->compAngleY = CompFilterProcess(filter->compAngleY, filter->accelAngleY, 
+                                           filter->Gx);
 }
 
 
@@ -203,45 +186,91 @@ CompGyroUpdate(SixAxis *filter, float gyroX, float gyroY, float gyroZ)
 void
 CompAccelCalculate(SixAxis *filter)
 {
-    uint8_t idx;
-    float angle[2];
-    
     // Angle made by X axis acceleration vector relative to ground
-    // accelAngleX = atan(Ax, sqrt( SQ(Ay) + SQ(Az) )
-    angle[0] = atan2f(filter->Ax, sqrtf( SQRE(filter->Ay) + SQRE(filter->Az) ) );
+    filter->angleAngleX = atan2f(filter->Ax, sqrtf(SQRE(filter->Ay) + SQRE(filter->Az)));
     
     // Angle made by Y axis acceleration vector relative to ground
-    // accelAngleY = atan(Ay, sqrt( SQ(Ax) + SQ(Az) )
-    angle[1] = atan2f(filter->Ay, sqrtf( SQRE(filter->Ax) + SQRE(filter->Az) ) );
+    filter->angleAngleY = atan2f(filter->Ay, sqrtf(SQRE(filter->Ax) + SQRE(filter->Az)));
     
-    // Check to see which quadrant of the unit circle the angle lies in
-    // and format the angle to lie in the range of 0 to 2*PI
-    for(idx = 0; idx < 2; idx++)
+    // Format the accel. angles to lie in the range of 0 to 2*pi
+    filter->accelAngleX = FormatAccelRange(filter->accelAngleX, filter->Az);
+    filter->accelAngleY = FormatAccelRange(filter->accelAngleY, filter->Az);
+}
+
+float
+FormatAccelRange(float accelAngle, float accelZ)
+{
+    if(accelZ < 0.0f)
     {
-        if(filter->Az < 0.0f)
-        {
-            // Angle lies in Quadrant 2 or Quadrant 3 of
-            // the unit circle
-            angle[idx] = PI - angle[idx];
-        }
-        else if(filter->Az > 0.0f && angle[idx] < 0.0f)
-        {
-            // Angle lies in Quadrant 4 of the unit circle
-            angle[idx] = TWO_PI + angle[idx];
-        }
-        
-        // If both of the previous conditions were not satisfied, then
-        // the angle must lie in Quadrant 1
-        
-        // Save accelerometer angle to structure
-        if(idx == 0)
-        {
-            filter->accelAngleX = angle[idx];
-        }
-        else
-        {
-            filter->accelAngleY = angle[idx];
-        }
+        // Angle lies in Quadrant 2 or Quadrant 3 of
+        // the unit circle
+        accelAngle = PI - accelAngle;
     }
+    else if(accelZ > 0.0f && accelAngle < 0.0f)
+    {
+        // Angle lies in Quadrant 4 of the unit circle
+        accelAngle = TWO_PI + accelAngle;
+    }
+    
+    // If both of the previous conditions were not satisfied, then
+    // the angle must lie in Quadrant 1 and nothing more needs
+    // to be done.
+    
+    return accelAngle;
+}
+
+float
+FormatFastConverge(float compAngle, float accAngle)
+{
+    // Work with comp. angles that are closest in distance to the accelerometer angle
+    // on the unit circle. This allows for significantly faster filter convergence.
+    if(compAngle > accAngle + PI)
+    {
+        compAngle = compAngle - TWO_PI;
+    }
+    else if(accAngle > compAngle + PI)
+    {
+        compAngle = compAngle + TWO_PI;
+    }
+    
+    return compAngle;
+}
+
+float
+FormatRange0to2PI(float compAngle)
+{
+    while(compAngle >= TWO_PI)
+    {
+        compAngle = compAngle - TWO_PI;
+    }
+    
+    while(compAngle < 0.0f)
+    {
+        compAngle = compAngle + TWO_PI;
+    }
+    
+    return compAngle;
+}
+
+float
+CompFilterProcess(float compAngle, float accelAngle, float omega)
+{
+    float gyroAngle;
+
+    // Speed up filter convergence
+    compAngle = FormatFastConverge(compAngle, accelAngle);
+    
+    // Integrate the gyroscope's angular velocity reading to get an angle
+    gyroAngle = compAngle + omega*deltaT;
+    
+    // Weighting is applied to the gyroscope's angular position and 
+    // accelerometer's angular position and they are put together to form one 
+    // angle, the complimentary filter angle.
+    compAngle = alpha*gyroAngle + (1.0f - alpha)*accelAngle;
+    
+    // Format the Comp. Angle to lie in the range of 0 to 2*pi
+    compAngle = FormatRange0to2PI(compAngle);
+    
+    return compAngle;
 }
 

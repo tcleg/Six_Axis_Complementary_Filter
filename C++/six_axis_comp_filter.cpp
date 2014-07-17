@@ -109,17 +109,17 @@ CompUpdate()
 }
 
 void CompSixAxis::
-CompAnglesGet(float *XAngle, float *YAngle)
+CompAnglesGet(float &XAngle, float &YAngle)
 {
     // Transfer class's updated comp. filter's angles
     // Check if valid addresses were passed as well.
-    if(XAngle)
+    if(&XAngle)
     {
-        *XAngle = compAngleX;
+        XAngle = compAngleX;
     }
-    if(YAngle)
+    if(&YAngle)
     {
-        *YAngle = compAngleY;
+        YAngle = compAngleY;
     }
 }
 
@@ -245,7 +245,7 @@ CompFilterProcess(float compAngle, float accelAngle, float omega)
     
     // Weighting is applied to the gyroscope's angular position and 
     // accelerometer's angular position and they are put together to form one 
-    // angle, the complementary filter angle.
+    // angle, the complimentary filter angle.
     compAngle = alpha*gyroAngle + (1.0f - alpha)*accelAngle;
     
     // Format the Comp. Angle to lie in the range of 0 to 2*pi

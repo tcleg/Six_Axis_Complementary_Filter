@@ -51,7 +51,7 @@
 #define PI                              3.1415926f
 #define HALF_PI                         1.5707963f
 #define TWO_PI                          6.2831853f
-#define SQRE(x) 		                ((x)*(x))
+#define SQ(x)   		                ((x)*(x))
 
 //*********************************************************************************
 // Internal Function Prototypes
@@ -60,13 +60,13 @@
 // 
 // Extrapolates angles according to accelerometer readings
 // 
-void CompAccelCalculate();
+void CompAccelCalculate(SixAxis *filter);
 
 // 
 // Check to see which quadrant of the unit circle the angle lies in
 // and format the angle to lie in the range of 0 to 2*PI
 // 
-float FormatAccelRange(float accelAngle, float accelZ)
+float FormatAccelRange(float accelAngle, float accelZ);
 
 // 
 // Formats the Comp. Angle for faster filter convergence
@@ -74,15 +74,16 @@ float FormatAccelRange(float accelAngle, float accelZ)
 float FormatFastConverge(float compAngle, float accAngle);
 
 // 
-// Formats the complimentary filter angle to always lie within the range of
+// Formats the complementary filter angle to always lie within the range of
 // 0 to 2*pi
 // 
 float FormatRange0to2PI(float compAngle);
 
 // 
-// Complimentary Filter - This is where the magic happens.
+// Complementary Filter - This is where the magic happens.
 // 
-float CompFilterProcess(float compAngle, float accelAngle, float omega);
+float CompFilterProcess(float compAngle, float accelAngle, float omega,
+                        float deltaT, float alpha);
 
 //*********************************************************************************
 // External Functions
@@ -135,12 +136,14 @@ CompUpdate(SixAxis *filter)
     // acquire positive angles about the X axis. This is shown below with -Gy being
     // passed as a parameter.
     filter->compAngleX = CompFilterProcess(filter->compAngleX, filter->accelAngleX, 
-                                           -(filter->Gy));
+                                           -(filter->Gy), filter->deltaT,
+                                           filter->alpha);
     
     // In this case, the rotational velocity about the X axis (Gx) is projected back
     // onto the Y axis and its sense of direction is already correct.
     filter->compAngleY = CompFilterProcess(filter->compAngleY, filter->accelAngleY, 
-                                           filter->Gx);
+                                           filter->Gx, filter->deltaT,
+                                           filter->alpha);
 }
 
 
@@ -187,10 +190,10 @@ void
 CompAccelCalculate(SixAxis *filter)
 {
     // Angle made by X axis acceleration vector relative to ground
-    filter->angleAngleX = atan2f(filter->Ax, sqrtf(SQRE(filter->Ay) + SQRE(filter->Az)));
+    filter->accelAngleX = atan2f(filter->Ax, sqrtf(SQ(filter->Ay) + SQ(filter->Az)));
     
     // Angle made by Y axis acceleration vector relative to ground
-    filter->angleAngleY = atan2f(filter->Ay, sqrtf(SQRE(filter->Ax) + SQRE(filter->Az)));
+    filter->accelAngleY = atan2f(filter->Ay, sqrtf(SQ(filter->Ax) + SQ(filter->Az)));
     
     // Format the accel. angles to lie in the range of 0 to 2*pi
     filter->accelAngleX = FormatAccelRange(filter->accelAngleX, filter->Az);
@@ -253,7 +256,8 @@ FormatRange0to2PI(float compAngle)
 }
 
 float
-CompFilterProcess(float compAngle, float accelAngle, float omega)
+CompFilterProcess(float compAngle, float accelAngle, float omega, float deltaT,
+                  float alpha)
 {
     float gyroAngle;
 

@@ -179,7 +179,8 @@ extern void CompAnglesGet(SixAxis *filter, float *XAngle, float *YAngle);
 // Returns:
 //      Nothing.
 // 
-extern void CompAccelUpdate(SixAxis *filter, float accelX, float accelY, float accelZ);
+extern void CompAccelUpdate(SixAxis *filter, float accelX, float accelY, 
+                            float accelZ);
                                
 // 
 // Complementary Filter Gyroscope Update

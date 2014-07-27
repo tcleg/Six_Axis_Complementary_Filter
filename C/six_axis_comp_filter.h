@@ -62,6 +62,9 @@ extern "C"
 // Macros and Globals
 //*********************************************************************************
 
+#define DEG_TO_RAD_RATIO    0.0174532f
+#define RAD_TO_DEG_RATIO    57.2957795f
+
 typedef struct
 {
     //
@@ -205,7 +208,7 @@ extern void CompGyroUpdate(SixAxis *filter, float gyroX, float gyroY, float gyro
 // Returns:
 //      A value in radians.
 // 
-inline float CompDegreesToRadians(float degrees){ return degrees*0.0174532f; }
+inline float CompDegreesToRadians(float degrees){ return degrees*DEG_TO_RAD_RATIO; }
 
 // 
 // Complementary Filter Radians to Degrees
@@ -216,7 +219,7 @@ inline float CompDegreesToRadians(float degrees){ return degrees*0.0174532f; }
 // Returns:
 //      A value in degrees.
 // 
-inline float CompRadiansToDegrees(float radians){ return radians*57.2957795f; }
+inline float CompRadiansToDegrees(float radians){ return radians*RAD_TO_DEG_RATIO; }
 
 // 
 // End of C Binding

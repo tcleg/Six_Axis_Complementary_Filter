@@ -64,7 +64,7 @@ void CompAccelCalculate(SixAxis *filter);
 
 // 
 // Check to see which quadrant of the unit circle the angle lies in
-// and format the angle to lie in the range of 0 to 2*PI
+// and format the angle to lie in the range of 0 to 2*pi
 // 
 float FormatAccelRange(float accelAngle, float accelZ);
 

@@ -13,6 +13,9 @@
 // with even 5 DOF IMUs since the gyroscope reading about the Z axis technically
 // goes unused with this library at its current revision.
 // 
+// For more info on the theory behind how this filter functions, view
+// http://web.mit.edu/~jinstone/Public/filter.pdf
+// 
 // Revisions can be found here:
 // https://github.com/tcleg
 // 

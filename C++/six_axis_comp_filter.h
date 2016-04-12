@@ -90,7 +90,12 @@ CompSixAxis
         //      None.
         //
         CompSixAxis(float deltaTime, float tau);
-
+        
+        //
+        // Comp. filter angle output in relation to the X and Y axes.
+        //
+        float compAngleX, compAngleY;
+        
         //
         // Complementary Filter Start
         // Description:
@@ -104,6 +109,7 @@ CompSixAxis
         // Returns:
         //      None.
         //
+        
         void CompStart();
 
         //
@@ -210,11 +216,6 @@ CompSixAxis
         // Accelerometer angles in relation to the X and Y axes.
         //
         float accelAngleX, accelAngleY;
-
-        //
-        // Comp. filter angle output in relation to the X and Y axes.
-        //
-        float compAngleX, compAngleY;
 
         //
         // Extrapolates angles according to accelerometer readings

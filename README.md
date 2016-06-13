@@ -24,4 +24,4 @@ this library in any C/C++ project as needed.
 
 All documentation for how to use the library can be found in the header file of the library.
 
-An example implementation with Arduino and the LSM6DS3 motion sensor can be found in [this gist](https://gist.github.com/savovs/cbe998c3dfea711c3413cb23b6244cd9)
+An example with Arduino and the LSM6DS3 motion sensor can be found in [this gist](https://gist.github.com/savovs/cbe998c3dfea711c3413cb23b6244cd9)
